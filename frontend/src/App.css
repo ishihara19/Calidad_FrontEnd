@@ -1,1 +1,17 @@
 @import "tailwindcss";
+
+.input-style {
+  @apply w-full px-3 pt-5 pb-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white;
+}
+
+.floating-label {
+  @apply absolute left-3 top-2 text-gray-500 text-sm transition-all transform scale-90 origin-left pointer-events-none;
+}
+
+.peer:placeholder-shown + .floating-label {
+  @apply top-3 left-3 text-base text-gray-400 scale-100;
+}
+
+.peer:focus + .floating-label {
+  @apply top-2 left-3 text-sm text-blue-500 scale-90;
+}
