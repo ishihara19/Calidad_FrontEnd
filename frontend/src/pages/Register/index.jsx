@@ -98,7 +98,7 @@ const Register = () => {
       person_type: parseInt(formData.person_type),
       phone: formData.phone,
       address: formData.address,
-      empresa: formData.empresa, // 👈 se incluye
+      codigo_empresa: formData.empresa, // 👈 se incluye
       password: formData.password,
     };
 
