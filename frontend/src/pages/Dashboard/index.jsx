@@ -57,13 +57,13 @@ const Dashboard = () => {
           <div className="text-sm text-gray-700">
             Bienvenido, <span className="font-medium">{user?.nombre}</span>
           </div>
-          <button 
+          {/*<button 
             onClick={handleLogout} 
             disabled={isLoading}
             className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:bg-red-300"
           >
             {isLoading ? 'Cerrando sesión...' : 'Cerrar Sesión'}
-          </button>
+          </button>*/}
         </div>
       </div>
       

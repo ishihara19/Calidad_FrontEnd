@@ -7,6 +7,8 @@ import NotFound from './pages/NotFound';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import Proyectos from './pages/Proyectos';
+import EvaluacionDetalle from './pages/EvaluacionDetalle';
 import './App.css';
 
 
@@ -21,6 +23,8 @@ function App() {
         <Route path='login' element={<Login/>}/>
         <Route path='register' element={<Register/>}/>
         <Route path='dashboard' element={<Dashboard/>}/>
+        <Route path="proyectos" element={<Proyectos />} />
+        <Route path="evaluacion/:id" element={<EvaluacionDetalle />} />
         <Route path="about" element={<About />} />
         <Route path="contact" element={<Contact />} />
         <Route path="*" element={<NotFound />} />

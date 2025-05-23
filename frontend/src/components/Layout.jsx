@@ -12,7 +12,7 @@ const Layout = () => {
       
       <footer className="bg-gray-800 text-white py-4">
         <div className="container mx-auto px-4 text-center">
-          <p>&copy; {new Date().getFullYear()} Mi Proyecto - Todos los derechos reservados</p>
+          <p>&copy; {new Date().getFullYear()} CodeScore - Todos los derechos reservados</p>
         </div>
       </footer>
     </div>

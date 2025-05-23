@@ -69,7 +69,11 @@ export const AuthProvider = ({ children }) => {
     const token = user?.token;
     console.log("token",token)
     try {
-      const response = await api.post('/users/logout'); // <-- Endpoint corregido
+      const response = await api.post(
+      '/users/logout',
+      {},
+      { headers: { Authorization: `Token ${token}` } }
+    ); // <-- Endpoint corregido
       const successMessage = response.data?.message || 'Sesión cerrada correctamente.';
       setCurrentUser(null);
       localStorage.removeItem('user');

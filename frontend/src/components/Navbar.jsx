@@ -12,12 +12,13 @@ const Navbar = () => {
   const isLoggedIn = isAuthenticated();
 
   return (
-    <nav className="bg-white shadow-md">
+    <nav style={{ backgroundColor: '#B8BBBF' }} className="shadow-md">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex-shrink-0">
-            <NavLink to="/" className="text-xl font-bold text-gray-800">
-              Mi Proyecto
+            <NavLink to="/" className="flex items-center space-x-2 text-xl font-bold text-gray-800">
+              <img src="/public/logo2.png" alt="Logo CodeScore" className="h-16 w-16" />
+              <span>CodeScore</span>
             </NavLink>
           </div>
           
@@ -68,9 +69,9 @@ const Navbar = () => {
             <div className="flex items-center space-x-2">
               {isLoggedIn ? (
                 <div className="flex items-center space-x-4">
-                  <span className="text-sm text-gray-700">
+                  {/*<span className="text-sm text-gray-700">
                     Hola, {currentUser.user?.nombre}
-                  </span>
+                  </span>*/}
                   <button
                     onClick={logout}
                     className="px-3 py-2 rounded-md text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition-colors"
