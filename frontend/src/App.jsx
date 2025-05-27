@@ -27,6 +27,9 @@ import NormasIndex from './pages/Normas/index';
 import CreateNorma from './pages/Normas/Create';
 import EditNorma from './pages/Normas/Edit';
 import NormaDetail from './pages/Normas/Detail';
+import AdminDashboard from './pages/AdministradorDashboard';
+import AdminEmpresas from './pages/AdministradorEmpresas';
+import AdminSistemas from './pages/AdministradorSistemas';
 
 function App() {
   return (
@@ -51,9 +54,9 @@ function App() {
         <Route path="matrices" element={<div>Página en desarrollo - Matrices</div>} />
         
         {/* Rutas para Administradores */}
-        <Route path="admin/dashboard" element={<div>Dashboard Administrador</div>} />
-        <Route path="admin/empresas" element={<div>Gestión de Empresas</div>} />
-        <Route path="admin/sistemas" element={<div>Gestión de Sistemas</div>} />
+        <Route path="admin/dashboard" element={<AdminDashboard/>} />
+        <Route path="admin/empresas" element={<AdminEmpresas/>} />
+        <Route path="admin/sistemas" element={<AdminSistemas/>} />
         
         {/* Rutas para Evaluadores */}
         <Route path="evaluador/dashboard" element={<EvaluadorDashboard />} />
