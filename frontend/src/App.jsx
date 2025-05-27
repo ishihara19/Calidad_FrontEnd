@@ -30,6 +30,9 @@ import NormaDetail from './pages/Normas/Detail';
 import AdminDashboard from './pages/AdministradorDashboard';
 import AdminEmpresas from './pages/AdministradorEmpresas';
 import AdminSistemas from './pages/AdministradorSistemas';
+import EvaluadorEvaluarSistema from './pages/EvaluadorEvaluarSistema';
+import EvaluadorEvaluaciones from './pages/EvaluadorEvaluaciones';
+import EvaluadorReportes from './pages/EvaluadorReportes';
 
 function App() {
   return (
@@ -57,18 +60,17 @@ function App() {
         <Route path="admin/dashboard" element={<AdminDashboard/>} />
         <Route path="admin/empresas" element={<AdminEmpresas/>} />
         <Route path="admin/sistemas" element={<AdminSistemas/>} />
-        
+      
         {/* Rutas para Evaluadores */}
         <Route path="evaluador/dashboard" element={<EvaluadorDashboard />} />
         <Route path="evaluador/empresas" element={<EvaluadorEmpresas />} />
         <Route path="evaluador/empresa/:empresaId/sistemas" element={<EvaluadorSistemasEmpresa />} />
         <Route path="evaluador/sistema/:sistemaId/detalle" element={<EvaluadorDetalleSistema />} />
-        <Route path="evaluador/sistema/:sistemaId/evaluar" element={<div>Página de Evaluación - En desarrollo</div>} />
-        <Route path="evaluador/evaluaciones" element={<div>Mis Evaluaciones</div>} />
-        <Route path="evaluador/nueva-evaluacion" element={<div>Nueva Evaluación - En desarrollo</div>} />
-        <Route path="evaluador/reportes" element={<div>Reportes - En desarrollo</div>} />
+        <Route path="evaluador/sistema/:sistemaId/evaluar" element={<EvaluadorEvaluarSistema/>} />
+        <Route path="evaluador/evaluaciones" element={<EvaluadorEvaluaciones/>} />
         <Route path="evaluador/evaluacion/:evaluacionId/detalle" element={<div>Detalle de Evaluación - En desarrollo</div>} />
-        
+        <Route path="evaluador/nueva-evaluacion" element={<div>Nueva Evaluación - En desarrollo</div>} />
+
         {/* Rutas genéricas (fallback) */}
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="proyectos" element={<Proyectos />} />
