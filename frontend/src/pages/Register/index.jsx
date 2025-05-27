@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useAuth } from "../../hooks/useAuth"
 import api from "../../api/axios"
+import PhoneInputCustom from "../../components/PhoneInputCustom";
 import {
   Eye,
   EyeOff,
@@ -64,9 +65,8 @@ const Register = () => {
         // Fallback to default values if API fails
         setDocumentTypes([
           { documentTypeId: 1, typeName: "Cédula de Ciudadanía" },
-          { documentTypeId: 2, typeName: "Cédula de Extranjería" },
-          { documentTypeId: 3, typeName: "Pasaporte" },
-          { documentTypeId: 4, typeName: "NIT" },
+          { documentTypeId: 2, typeName: "NIT" },
+          { documentTypeId: 3, typeName: "Cédula de Extranjería" },
         ])
         setPersonTypes([
           { personTypeId: 1, typeName: "Persona Natural" },
@@ -124,22 +124,36 @@ const Register = () => {
       case "phone":
         if (!value.trim()) {
           errors[name] = "Teléfono es obligatorio"
-        } else if (!/^\d+$/.test(value)) {
-          errors[name] = "Teléfono solo puede contener números"
-        } else if (value.length < 7 || value.length > 15) {
-          errors[name] = "Teléfono debe tener entre 7 y 15 dígitos"
+        } else if (!/^\d{7,15}$/.test(value)) {
+          errors[name] = "Número de teléfono no válido"
         }
-        break
+        break;
 
-      case "document":
+
+      /*case "document":
         if (!value.trim()) {
           errors[name] = "Número de documento es obligatorio"
         } else if (!/^\d+$/.test(value)) {
           errors[name] = "Número de documento solo puede contener números"
         } else if (value.length < 6 || value.length > 15) {
-          errors[name] = "Número de documento debe tener entre 6 y 15 dígitos"
+          errors[name] = "Número de documento debe tener entre 9 y 10 dígitos"
         }
-        break
+        break*/
+
+      case "document":
+      if (!value.trim()) {
+        errors[name] = "Número de documento es obligatorio"
+      } else if (!/^\d+$/.test(value)) {
+        errors[name] = "Número de documento solo puede contener números"
+      } else {
+        const docType = formData.document_type
+        if (docType === "2" && value.length !== 9) {
+          errors[name] = "NIT debe tener exactamente 9 dígitos"
+        } else if ((docType === "1" || docType === "3") && value.length !== 10) {
+          errors[name] = "Cédula debe tener exactamente 10 dígitos"
+        }
+      }
+      break
 
       case "address":
         if (!value.trim()) {
@@ -187,26 +201,43 @@ const Register = () => {
   }
 
   const handleChange = (e) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
 
-    // Update form data
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    let filteredValue = value;
 
-    // Clear previous errors for this field
+    // Aplicar filtro solo a nombre y apellido (solo letras)
+    if (name === "first_name" || name === "last_name") {
+      filteredValue = value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, "");
+    }
+
+    // Solo alfanumérico (sin espacios ni caracteres especiales) para código de empresa
+    if (name === "empresa") {
+      filteredValue = value.replace(/[^a-zA-Z0-9]/g, "");
+    }
+
+    // Solo números para número de documento y teléfono
+    if (name === "document" || name === "phone") {
+    filteredValue = value.replace(/[^0-9]/g, "");
+    }
+
+    // Actualiza el estado con el valor filtrado
+    setFormData((prev) => ({ ...prev, [name]: filteredValue }));
+
+    // Elimina errores previos
     if (fieldErrors[name]) {
       setFieldErrors((prev) => {
-        const newErrors = { ...prev }
-        delete newErrors[name]
-        return newErrors
-      })
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
     }
 
-    // Validate field in real time
-    const errors = validateField(name, value)
+    // Validación en tiempo real
+    const errors = validateField(name, filteredValue);
     if (Object.keys(errors).length > 0) {
-      setFieldErrors((prev) => ({ ...prev, ...errors }))
+      setFieldErrors((prev) => ({ ...prev, ...errors }));
     }
-  }
+  };
 
   const validateForm = () => {
     const errors = {}
@@ -366,6 +397,7 @@ const Register = () => {
                         fieldErrors.first_name ? "border-red-300 bg-red-50" : "border-gray-300"
                       }`}
                       placeholder="Ingresa tu nombre"
+                      maxLength={20}
                     />
                   </div>
                   {fieldErrors.first_name && (
@@ -389,6 +421,7 @@ const Register = () => {
                         fieldErrors.last_name ? "border-red-300 bg-red-50" : "border-gray-300"
                       }`}
                       placeholder="Ingresa tu apellido"
+                      maxLength={20}
                     />
                   </div>
                   {fieldErrors.last_name && (
@@ -401,16 +434,17 @@ const Register = () => {
               </div>
 
               {/* Person Type */}
-              <div className="space-y-2">
+              <div className="space-y-2 relative">
                 <label className="block text-sm font-medium text-gray-700">Tipo de Persona *</label>
                 <select
                   name="person_type"
                   value={formData.person_type}
                   onChange={handleChange}
-                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                    fieldErrors.person_type ? "border-red-300 bg-red-50" : "border-gray-300"
+                  className={`w-full px-4 py-3 pr-6 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                  fieldErrors.person_type ? "border-red-300 bg-red-50" : "border-gray-300"
                   }`}
                   disabled={isLoading || personTypes.length === 0}
+                  
                 >
                   <option value="">Selecciona el tipo de persona</option>
                   {personTypes.map((type) => (
@@ -429,23 +463,30 @@ const Register = () => {
 
               {/* Document Information */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
+                <div className="space-y-2 relative">
                   <label className="block text-sm font-medium text-gray-700">Tipo de Documento *</label>
                   <select
                     name="document_type"
                     value={formData.document_type}
                     onChange={handleChange}
-                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                      fieldErrors.document_type ? "border-red-300 bg-red-50" : "border-gray-300"
-                    }`}
-                    disabled={isLoading || documentTypes.length === 0}
+                    disabled={!formData.person_type}
+                    className={`w-full px-4 py-3 border rounded-xl transition-all
+                      focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                      ${
+                        fieldErrors.document_type 
+                          ? "border-red-300 bg-red-50"
+                          : !formData.person_type
+                            ? "border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed"
+                            : "border-gray-300 bg-white text-black cursor-pointer"
+                      }
+                    `}
                   >
                     <option value="">Selecciona el tipo</option>
                     {filteredDocumentTypes.map((type, index) => (
-                        <option key={index} value={type.documentTypeId}>
-                          {type.typeName}
-                        </option>
-                      ))}
+                      <option key={index} value={type.documentTypeId}>
+                        {type.typeName}
+                      </option>
+                    ))}
                   </select>
                   {fieldErrors.document_type && (
                     <p className="text-red-600 text-sm flex items-center">
@@ -455,7 +496,7 @@ const Register = () => {
                   )}
                 </div>
 
-                <div className="space-y-2">
+                {/*<div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700">Número de Documento *</label>
                   <div className="relative">
                     <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -468,6 +509,7 @@ const Register = () => {
                         fieldErrors.document ? "border-red-300 bg-red-50" : "border-gray-300"
                       }`}
                       placeholder="Número de documento"
+                      maxLength={10}
                     />
                   </div>
                   {fieldErrors.document && (
@@ -476,7 +518,38 @@ const Register = () => {
                       {fieldErrors.document}
                     </p>
                   )}
+                </div>*/}
+
+                <div className="space-y-2 relative">
+                  <label className="block text-sm font-medium text-gray-700">Número de Documento *</label>
+                  <input
+                    type="text"
+                    name="document"
+                    value={formData.document}
+                    onChange={handleChange}
+                    disabled={!formData.person_type}
+                    maxLength={10}
+                    placeholder="Número de documento"
+                    className={`w-full px-4 py-3 border rounded-xl transition-all
+                      ${
+                        fieldErrors.document
+                          ? "border-red-300 bg-red-50"
+                          : !formData.person_type
+                            ? "border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed"
+                            : "border-gray-300 bg-white text-black cursor-text"
+                      }
+                      focus:outline-none
+                      focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                    `}
+                  />
+                  {fieldErrors.document && (
+                    <p className="text-red-600 text-sm flex items-center">
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      {fieldErrors.document}
+                    </p>
+                  )}
                 </div>
+
               </div>
 
               {/* Company Code */}
@@ -493,6 +566,7 @@ const Register = () => {
                     onChange={handleChange}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     placeholder="Código de empresa"
+                    maxLength={8}
                   />
                 </div>
               </div>
@@ -534,31 +608,14 @@ const Register = () => {
 
               {/* Phone and Address */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
+                <div className="space-y-2 relative">
                   <label className="block text-sm font-medium text-gray-700">Teléfono *</label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    <input
-                      name="phone"
-                      type="text"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                        fieldErrors.phone ? "border-red-300 bg-red-50" : "border-gray-300"
-                      }`}
-                      placeholder="Número de teléfono"
-                    />
-                  </div>
-                  {fieldErrors.phone && (
-                    <p className="text-red-600 text-sm flex items-center">
-                      <AlertCircle className="h-4 w-4 mr-1" />
-                      {typeof fieldErrors.phone === "string"
-                        ? fieldErrors.phone
-                        : Array.isArray(fieldErrors.phone)
-                          ? fieldErrors.phone[0]
-                          : "Teléfono no válido"}
-                    </p>
-                  )}
+                  <PhoneInputCustom
+                    value={formData.phone}
+                    onChange={(phone) => setFormData((prev) => ({ ...prev, phone }))}
+                    error={fieldErrors.phone}
+                    placeholder="Dirección completa"
+                  />
                 </div>
 
                 <div className="space-y-2">

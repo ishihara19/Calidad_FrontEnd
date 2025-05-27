@@ -1,6 +1,8 @@
 // src/components/Navbar.jsx
-import { NavLink } from 'react-router-dom';
+import { useState } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import LogoutModal from './LogoutModal'; 
 
 const Navbar = () => {
   // Clase para links activos
@@ -10,8 +12,31 @@ const Navbar = () => {
   
   const { isAuthenticated, currentUser, logout } = useAuth();
   const isLoggedIn = isAuthenticated();
+  const navigate = useNavigate();
+
+  // Estado del modal
+  const [modalOpen, setModalOpen] = useState(false);
+  const [logoutMessage, setLogoutMessage] = useState('');
+
+  // Manejador del botón de logout
+  const handleLogout = async () => {
+    const result = await logout();
+    if (result.success) {
+      setLogoutMessage(result.message);
+      setModalOpen(true);
+    } else {
+      console.error(result.message);
+    }
+  };
+
+  // Cuando el usuario cierra el modal, redirigimos
+  const handleModalClose = () => {
+    setModalOpen(false);
+    navigate('/login');
+  };
 
   return (
+    <>
     <nav style={{ backgroundColor: '#B8BBBF' }} className="shadow-md">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
@@ -73,7 +98,7 @@ const Navbar = () => {
                     Hola, {currentUser.user?.nombre}
                   </span>*/}
                   <button
-                    onClick={logout}
+                    onClick={handleLogout}
                     className="px-3 py-2 rounded-md text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition-colors"
                   >
                     Cerrar Sesión
@@ -112,6 +137,13 @@ const Navbar = () => {
         </div>
       </div>
     </nav>
+    {/* Modal de cierre de sesión */}
+      <LogoutModal
+        isOpen={modalOpen}
+        onClose={handleModalClose}
+        message={logoutMessage}
+      />
+    </>
   );
 };
 

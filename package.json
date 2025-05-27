@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "antd": "^5.25.3",
+    "classnames": "^2.5.1",
+    "react-phone-input-2": "^2.15.1"
+  }
+}
