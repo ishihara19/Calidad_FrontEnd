@@ -10,6 +10,11 @@ import Dashboard from './pages/Dashboard';
 import Proyectos from './pages/Proyectos';
 import EvaluacionDetalle from './pages/EvaluacionDetalle';
 import './App.css';
+// Importar componentes de Normas
+import NormasIndex from './pages/Normas/index';
+import CreateNorma from './pages/Normas/Create';
+import EditNorma from './pages/Normas/Edit';
+import NormaDetail from './pages/Normas/Detail';
 
 
 function App() {
@@ -27,6 +32,10 @@ function App() {
         <Route path="evaluacion/:id" element={<EvaluacionDetalle />} />
         <Route path="about" element={<About />} />
         <Route path="contact" element={<Contact />} />
+        <Route path="/normas" element={<NormasIndex />} />
+        <Route path="/normas/crear" element={<CreateNorma />} />
+        <Route path="/normas/:id" element={<NormaDetail />} />
+        <Route path="/normas/:id/editar" element={<EditNorma />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

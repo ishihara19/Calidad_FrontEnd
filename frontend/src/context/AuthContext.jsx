@@ -67,7 +67,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     const user = currentUser?.user;
     const token = user?.token;
-    console.log("token",token)
+    //console.log("token",token)
     try {
       const response = await api.post(
       '/users/logout',
@@ -75,14 +75,17 @@ export const AuthProvider = ({ children }) => {
       { headers: { Authorization: `Token ${token}` } }
     ); // <-- Endpoint corregido
       const successMessage = response.data?.message || 'Sesión cerrada correctamente.';
+      // Limpiar estado y localStorage
       setCurrentUser(null);
       localStorage.removeItem('user');
       delete api.defaults.headers.common['Authorization'];
-      return alert(successMessage);
+      //return alert(successMessage);
+      return { success: true, message: successMessage }; // Devuelve el resultado en lugar de mostrarlo
     } catch (err) {
       const message = err.response?.data?.error || 'No se pudo cerrar la sesión.';
       setError(message);
-      throw new Error(message);
+      //throw new Error(message);
+      return { success: false, message };
     } finally {
       setLoading(false);
     }
