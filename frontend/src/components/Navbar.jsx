@@ -9,7 +9,6 @@ const Navbar = () => {
   const baseStyle = "px-3 py-2 rounded-md hover:bg-gray-100 transition-colors";
 
   const { isAuthenticated, currentUser, logout, hasRole, userRoles } = useAuth();
-  console.log(userRoles)
   const isLoggedIn = isAuthenticated();
   const navigate = useNavigate();
 
@@ -36,10 +35,8 @@ const Navbar = () => {
     if (!isLoggedIn) {
       return (
         <>
-          <NavLink to="/" end className={({ isActive }) => `${baseStyle} ${isActive ? activeStyle : "text-gray-600"}`}>
-            Inicio
-          </NavLink>
-          <NavLink to="/quienes-somos" className={({ isActive }) => `${baseStyle} ${isActive ? activeStyle : "text-gray-600"}`}>
+       
+          <NavLink to="/quienes-somos" end className={({ isActive }) => `${baseStyle} ${isActive ? activeStyle : "text-gray-600"}`}>
             Quiénes Somos
           </NavLink>
           <NavLink to="/contact" className={({ isActive }) => `${baseStyle} ${isActive ? activeStyle : "text-gray-600"}`}>
@@ -128,7 +125,7 @@ const Navbar = () => {
                 {isLoggedIn ? (
                   <div className="flex items-center space-x-4">
                     <span className="text-sm text-gray-700">
-                      {currentUser?.user?.nombre} ({displayedRole})
+                      {currentUser?.user?.nombre} 
                     </span>
                     <button
                       onClick={handleLogout}

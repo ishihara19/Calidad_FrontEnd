@@ -32,7 +32,7 @@ const InicioUsuarioEmpresa = () => {
       icon: <Code className="h-12 w-12" />,
       color: 'bg-green-500',
       hoverColor: 'hover:bg-green-600',
-      route: '/mis-proyectos'
+      route: '/mis-sistemas'
     },
     {
       id: 'generar-matriz',
