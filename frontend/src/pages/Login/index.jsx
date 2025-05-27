@@ -30,31 +30,40 @@ const Login = () => {
     setRememberMe(!rememberMe);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setFormError("");
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setFormError("");
 
-    if (!formData.email || !formData.password) {
-      setFormError("Todos los campos son obligatorios");
-      return;
-    }
+  if (!formData.email || !formData.password) {
+    setFormError("Todos los campos son obligatorios");
+    return;
+  }
 
-    try {
-      // Supongamos que login devuelve un token
-      const token = await login(formData.email, formData.password);
+  try {
+    // Aquí llamas al login, que ya devuelve el objeto completo con user y roles
+    const user_login = await login(formData.email, formData.password);
 
-      if (rememberMe) {
-        localStorage.setItem("token", token);
-      } else {
-        sessionStorage.setItem("token", token);
-      }
+    // Guardar token ya lo hace el login y el AuthProvider
 
-      navigate(from, { replace: true });
-    } catch (error) {
-      setFormError(error.message || "Error al iniciar sesión");
-      console.error("Login error:", error);
-    }
-  };
+    // Extraer roles para redirigir
+    const roles = user_login.user.rol || [];
+
+    // Definir ruta por defecto
+    let dashboardPath = "/dashboard";
+
+    // Aquí haces la redirección según rol (puedes elegir el primer rol o lógica que prefieras)
+    if (roles.includes("Administradores")) dashboardPath = "/admin/dashboard";
+    else if (roles.includes("Evaluadores")) dashboardPath = "/evaluador/dashboard";
+    else if (roles.includes("Usuarios_Empresa")) dashboardPath = "/inicio";
+
+    navigate(dashboardPath, { replace: true });
+
+  } catch (error) {
+    setFormError(error.message || "Error al iniciar sesión");
+    console.error("Login error:", error);
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center">

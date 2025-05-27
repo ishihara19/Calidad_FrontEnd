@@ -8,7 +8,6 @@ import QuienesSomos from './pages/QuienesSomos';
 import NotFound from './pages/NotFound';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
 import Proyectos from './pages/Proyectos';
 import EvaluacionDetalle from './pages/EvaluacionDetalle';
 import InicioUsuarioEmpresa from './pages/InicioUsuarioEmpresa';
@@ -33,13 +32,16 @@ import AdminSistemas from './pages/AdministradorSistemas';
 import EvaluadorEvaluarSistema from './pages/EvaluadorEvaluarSistema';
 import EvaluadorEvaluaciones from './pages/EvaluadorEvaluaciones';
 import EvaluadorReportes from './pages/EvaluadorReportes';
+import UsuarioMisEvaluaciones from './pages/UsuarioMisEvaluaciones';
+import UsuarioMisSistemas from './pages/UsuarioMisSistemas';
+import RiskMatrixApp from './pages/UsuarioCrearMatriz';
 
 function App() {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
         {/* Rutas públicas */}
-        <Route index element={<Home />} />
+        <Route index element={<QuienesSomos />} />
         <Route path="quienes-somos" element={<QuienesSomos />} />
         <Route path="contact" element={<Contact />} />
         <Route path="about" element={<About />} />
@@ -51,9 +53,9 @@ function App() {
         {/* Rutas para Usuarios_Empresa */}
         <Route path="inicio" element={<InicioUsuarioEmpresa />} />
         <Route path="perfil" element={<PerfilUsuarioEmpresa />} />
-        <Route path="mis-evaluaciones" element={<div>Página en desarrollo - Mis Evaluaciones</div>} />
-        <Route path="mis-proyectos" element={<div>Página en desarrollo - Mis Proyectos</div>} />
-        <Route path="generar-matriz-riesgo" element={<div>Página en desarrollo - Generar Matriz de Riesgo</div>} />
+        <Route path="mis-evaluaciones" element={<UsuarioMisEvaluaciones />} />
+        <Route path="mis-sistemas" element={<UsuarioMisSistemas />} />
+        <Route path="generar-matriz-riesgo" element={<RiskMatrixApp />} />
         <Route path="matrices" element={<div>Página en desarrollo - Matrices</div>} />
         
         {/* Rutas para Administradores */}
@@ -69,10 +71,8 @@ function App() {
         <Route path="evaluador/sistema/:sistemaId/evaluar" element={<EvaluadorEvaluarSistema/>} />
         <Route path="evaluador/evaluaciones" element={<EvaluadorEvaluaciones/>} />
         <Route path="evaluador/evaluacion/:evaluacionId/detalle" element={<div>Detalle de Evaluación - En desarrollo</div>} />
-        <Route path="evaluador/nueva-evaluacion" element={<div>Nueva Evaluación - En desarrollo</div>} />
 
         {/* Rutas genéricas (fallback) */}
-        <Route path="dashboard" element={<Dashboard />} />
         <Route path="proyectos" element={<Proyectos />} />
         <Route path="evaluacion/:id" element={<EvaluacionDetalle />} />
         

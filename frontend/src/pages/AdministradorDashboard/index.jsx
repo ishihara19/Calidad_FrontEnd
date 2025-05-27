@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { 
-  Users, 
-  FileText, 
-  BarChart3, 
-  Settings, 
-  Shield, 
-  TrendingUp, 
-  Activity, 
+import { useState, useEffect } from 'react';
+import axios from '../../api/axios';
+import {
+  Users,
+  FileText,
+  BarChart3,
+  Shield,
+  TrendingUp,
+  Activity,
   AlertCircle,
   CheckCircle,
   Clock,
@@ -18,119 +18,141 @@ import {
   Edit,
   Trash2,
   MoreVertical,
-  Calendar,
-  Target,
   Award,
-  BookOpen
+  Target,
+  BookOpen,
 } from 'lucide-react';
 
+const StatCard = ({ title, value, change, percentage, icon: Icon, color }) => (
+  <div className="bg-white rounded-xl shadow-lg p-6 border-l-4" style={{ borderLeftColor: color }}>
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
+        <p className="text-3xl font-bold text-gray-900">{value}</p>
+        <div className="flex items-center mt-2">
+          <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
+          <span className="text-sm text-green-600 font-medium">+{change}</span>
+          <span className="text-sm text-gray-500 ml-1">({percentage}%)</span>
+        </div>
+      </div>
+      <div className="p-3 rounded-full" style={{ backgroundColor: `${color}20` }}>
+        <Icon className="h-8 w-8" style={{ color }} />
+      </div>
+    </div>
+  </div>
+);
+
+const getEstadoBadge = (estado) => {
+  const badges = {
+    completada: 'bg-green-100 text-green-800',
+    en_progreso: 'bg-yellow-100 text-yellow-800',
+    pendiente: 'bg-gray-100 text-gray-800',
+  };
+  return badges[estado] || 'bg-gray-100 text-gray-800';
+};
+
 const AdminDashboard = () => {
+  const [stats, setStats] = useState(null);
+  const [recentEvaluations, setRecentEvaluations] = useState([]);
+  const [topUsers, setTopUsers] = useState([]);
+  const [systemAlerts, setSystemAlerts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState('30');
 
-  // Datos de ejemplo
-  const stats = {
-    usuarios: { total: 248, cambio: +12, porcentaje: 4.8 },
-    evaluaciones: { total: 156, cambio: +23, porcentaje: 17.3 },
-    normas: { total: 12, cambio: +2, porcentaje: 20.0 },
-    proyectos: { total: 89, cambio: +8, porcentaje: 9.9 }
-  };
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
 
-  const recentEvaluations = [
-    { id: 1, proyecto: 'Sistema de Gestión ERP', evaluador: 'María González', norma: 'ISO 25000', estado: 'completada', puntuacion: 87, fecha: '2024-12-15' },
-    { id: 2, proyecto: 'App Móvil Bancaria', evaluador: 'Carlos Ruiz', norma: 'IEEE 730', estado: 'en_progreso', puntuacion: null, fecha: '2024-12-14' },
-    { id: 3, proyecto: 'Portal Web Corporativo', evaluador: 'Ana López', norma: 'ISO 25000', estado: 'completada', puntuacion: 92, fecha: '2024-12-13' },
-    { id: 4, proyecto: 'Sistema de Inventario', evaluador: 'Luis Torres', norma: 'CMMI', estado: 'pendiente', puntuacion: null, fecha: '2024-12-12' },
-    { id: 5, proyecto: 'Plataforma E-learning', evaluador: 'Sofia Mendez', norma: 'ISO 25000', estado: 'completada', puntuacion: 89, fecha: '2024-12-11' }
-  ];
+        // Obtener empresas para stats (como ejemplo para proyectos)
+        const empresasRes = await axios.get('/empresas/empresas/');
+        // Obtener usuarios (ejemplo con lista personas o usuarios)
+        const usuariosRes = await axios.get('/users/list-person-type');
+        // Obtener software (para evaluaciones ejemplo)
+        const softwareRes = await axios.get('/software/software');
 
-  const topUsers = [
-    { id: 1, nombre: 'María González', evaluaciones: 23, promedio: 88.5, rol: 'Evaluador Senior' },
-    { id: 2, nombre: 'Carlos Ruiz', evaluaciones: 19, promedio: 85.2, rol: 'Evaluador' },
-    { id: 3, nombre: 'Ana López', evaluaciones: 17, promedio: 91.3, rol: 'Evaluador Senior' },
-    { id: 4, nombre: 'Luis Torres', evaluaciones: 15, promedio: 82.7, rol: 'Evaluador' },
-    { id: 5, nombre: 'Sofia Mendez', evaluaciones: 14, promedio: 89.1, rol: 'Evaluador' }
-  ];
+        // Preparar stats (ejemplos básicos, puedes hacer más complejos)
+        setStats({
+          usuarios: { total: usuariosRes.data.length, cambio: 12, porcentaje: 4.8 },
+          evaluaciones: { total: softwareRes.data.length, cambio: 23, porcentaje: 17.3 },
+          normas: { total: 12, cambio: 2, porcentaje: 20.0 }, // Hardcodeado, cambia si tienes endpoint
+          proyectos: { total: empresasRes.data.length, cambio: 8, porcentaje: 9.9 },
+        });
 
-  const systemAlerts = [
-    { id: 1, tipo: 'warning', mensaje: '3 evaluaciones pendientes de revisión', tiempo: '2 horas' },
-    { id: 2, tipo: 'info', mensaje: 'Actualización del sistema programada para mañana', tiempo: '1 día' },
-    { id: 3, tipo: 'error', mensaje: 'Error en la carga de métricas del proyecto ERP', tiempo: '30 min' },
-    { id: 4, tipo: 'success', mensaje: 'Backup completado exitosamente', tiempo: '6 horas' }
-  ];
+        // Mapear software como evaluaciones recientes
+        const mappedEvaluations = softwareRes.data.slice(0, 5).map((item, idx) => ({
+          id: item.id,
+          proyecto: item.nombre,
+          evaluador: 'N/A', // No disponible, cambia según tu modelo
+          norma: 'N/A', // No disponible, cambia según tu modelo
+          estado: idx % 2 === 0 ? 'completada' : 'en_progreso', // ejemplo random
+          puntuacion: idx % 2 === 0 ? 85 + idx : null,
+          fecha: item.fecha_registro ? item.fecha_registro.split('T')[0] : 'N/A',
+        }));
+        setRecentEvaluations(mappedEvaluations);
 
-  const getEstadoBadge = (estado) => {
-    const badges = {
-      completada: 'bg-green-100 text-green-800',
-      en_progreso: 'bg-yellow-100 text-yellow-800',
-      pendiente: 'bg-gray-100 text-gray-800'
+        // Mapear usuarios top (ejemplo simple con usuariosRes)
+        const mappedUsers = usuariosRes.data.slice(0, 5).map((user, idx) => ({
+          id: idx,
+          nombre: user.typeName || `Usuario ${idx + 1}`, // ajusta a datos reales
+          evaluaciones: Math.floor(Math.random() * 20) + 5,
+          promedio: (80 + Math.random() * 15).toFixed(1),
+          rol: 'Evaluador',
+        }));
+        setTopUsers(mappedUsers);
+
+        // Alertas simuladas (puedes traerlas de un endpoint si tienes)
+        setSystemAlerts([
+          { id: 1, tipo: 'warning', mensaje: '3 evaluaciones pendientes de revisión', tiempo: '2 horas' },
+          { id: 2, tipo: 'info', mensaje: 'Actualización del sistema programada para mañana', tiempo: '1 día' },
+          { id: 3, tipo: 'error', mensaje: 'Error en la carga de métricas del proyecto ERP', tiempo: '30 min' },
+          { id: 4, tipo: 'success', mensaje: 'Backup completado exitosamente', tiempo: '6 horas' },
+        ]);
+      } catch (error) {
+        console.error('Error cargando datos del dashboard', error);
+      } finally {
+        setLoading(false);
+      }
     };
-    return badges[estado] || 'bg-gray-100 text-gray-800';
-  };
 
-  const getAlertIcon = (tipo) => {
-    const icons = {
-      warning: <AlertCircle className="h-4 w-4 text-yellow-500" />,
-      error: <AlertCircle className="h-4 w-4 text-red-500" />,
-      info: <Activity className="h-4 w-4 text-blue-500" />,
-      success: <CheckCircle className="h-4 w-4 text-green-500" />
-    };
-    return icons[tipo];
-  };
+    fetchDashboardData();
+  }, []);
 
-  const StatCard = ({ title, value, change, percentage, icon: Icon, color }) => (
-    <div className="bg-white rounded-xl shadow-lg p-6 border-l-4" style={{ borderLeftColor: color }}>
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
-          <p className="text-3xl font-bold text-gray-900">{value}</p>
-          <div className="flex items-center mt-2">
-            <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-            <span className="text-sm text-green-600 font-medium">+{change}</span>
-            <span className="text-sm text-gray-500 ml-1">({percentage}%)</span>
-          </div>
-        </div>
-        <div className="p-3 rounded-full" style={{ backgroundColor: `${color}20` }}>
-          <Icon className="h-8 w-8" style={{ color }} />
-        </div>
-      </div>
-    </div>
-  );
+  if (loading) return <div className="p-6">Cargando datos...</div>;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-3 rounded-xl">
-                <Shield className="h-8 w-8 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Panel de Administración</h1>
-                <p className="text-gray-600">Sistema de Evaluación de Calidad de Software</p>
-              </div>
+        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-3 rounded-xl">
+              <Shield className="h-8 w-8 text-white" />
             </div>
-            
-            <div className="flex items-center space-x-4">
-              <select
-                value={selectedPeriod}
-                onChange={(e) => setSelectedPeriod(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="7">Últimos 7 días</option>
-                <option value="30">Últimos 30 días</option>
-                <option value="90">Últimos 3 meses</option>
-                <option value="365">Último año</option>
-              </select>
-              
-              <button className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                <Plus className="h-4 w-4" />
-                <span>Nueva Acción</span>
-              </button>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Panel de Administración</h1>
+              <p className="text-gray-600">Sistema de Evaluación de Calidad de Software</p>
             </div>
+          </div>
+
+          <div className="flex items-center space-x-4">
+            <select
+              value={selectedPeriod}
+              onChange={(e) => setSelectedPeriod(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="7">Últimos 7 días</option>
+              <option value="30">Últimos 30 días</option>
+              <option value="90">Últimos 3 meses</option>
+              <option value="365">Último año</option>
+            </select>
+
+            <button className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <Plus className="h-4 w-4" />
+              <span>Nueva Acción</span>
+            </button>
           </div>
         </div>
       </div>
@@ -172,7 +194,7 @@ const AdminDashboard = () => {
           />
         </div>
 
-        {/* Navegación por pestañas */}
+        {/* Navegación pestañas */}
         <div className="bg-white rounded-xl shadow-lg mb-8">
           <div className="border-b border-gray-200">
             <nav className="flex space-x-8 px-6">
@@ -180,7 +202,7 @@ const AdminDashboard = () => {
                 { id: 'overview', label: 'Resumen', icon: BarChart3 },
                 { id: 'evaluations', label: 'Evaluaciones', icon: FileText },
                 { id: 'users', label: 'Usuarios', icon: Users },
-                { id: 'alerts', label: 'Alertas', icon: AlertCircle }
+                { id: 'alerts', label: 'Alertas', icon: AlertCircle },
               ].map(tab => (
                 <button
                   key={tab.id}
@@ -199,10 +221,10 @@ const AdminDashboard = () => {
           </div>
 
           <div className="p-6">
-            {/* Contenido del tab Overview */}
+            {/* Tab Overview */}
             {activeTab === 'overview' && (
               <div className="space-y-8">
-                {/* Gráfico de actividad */}
+                {/* Actividad sistema - muestra estadísticas estáticas o dinámicas */}
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                     <Activity className="h-5 w-5 text-blue-600 mr-2" />
@@ -247,7 +269,7 @@ const AdminDashboard = () => {
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="font-semibold text-gray-900">{user.evaluaciones} evaluaciones</div>
+                          <div className="font-semibold text-green-600">{user.evaluaciones} evaluaciones</div>
                           <div className="text-sm text-green-600">Promedio: {user.promedio}</div>
                         </div>
                       </div>
@@ -257,7 +279,7 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            {/* Contenido del tab Evaluaciones */}
+            {/* Tab Evaluaciones */}
             {activeTab === 'evaluations' && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
@@ -298,52 +320,54 @@ const AdminDashboard = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {recentEvaluations.map(evaluation => (
-                        <tr key={evaluation.id} className="border-b border-gray-100 hover:bg-gray-50">
-                          <td className="py-3 px-4">
-                            <div className="font-medium text-gray-900">{evaluation.proyecto}</div>
-                          </td>
-                          <td className="py-3 px-4 text-gray-600">{evaluation.evaluador}</td>
-                          <td className="py-3 px-4">
-                            <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                              {evaluation.norma}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4">
-                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${getEstadoBadge(evaluation.estado)}`}>
-                              {evaluation.estado.replace('_', ' ')}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4">
-                            {evaluation.puntuacion ? (
-                              <span className="font-medium text-gray-900">{evaluation.puntuacion}/100</span>
-                            ) : (
-                              <span className="text-gray-400">-</span>
-                            )}
-                          </td>
-                          <td className="py-3 px-4 text-gray-600">{evaluation.fecha}</td>
-                          <td className="py-3 px-4">
-                            <div className="flex items-center space-x-2">
-                              <button className="p-1 text-blue-600 hover:bg-blue-50 rounded">
-                                <Eye className="h-4 w-4" />
-                              </button>
-                              <button className="p-1 text-gray-600 hover:bg-gray-50 rounded">
-                                <Edit className="h-4 w-4" />
-                              </button>
-                              <button className="p-1 text-gray-600 hover:bg-gray-50 rounded">
-                                <MoreVertical className="h-4 w-4" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                      {recentEvaluations
+                        .filter(evaluation =>
+                          evaluation.proyecto.toLowerCase().includes(searchTerm.toLowerCase())
+                        )
+                        .map(evaluation => (
+                          <tr key={evaluation.id} className="border-b border-gray-100 hover:bg-gray-50">
+                            <td className="py-3 px-4 font-medium text-gray-900">{evaluation.proyecto}</td>
+                            <td className="py-3 px-4 text-gray-600">{evaluation.evaluador}</td>
+                            <td className="py-3 px-4">
+                              <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                                {evaluation.norma}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className={`px-2 py-1 text-xs font-medium rounded-full ${getEstadoBadge(evaluation.estado)}`}>
+                                {evaluation.estado.replace('_', ' ')}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4">
+                              {evaluation.puntuacion !== null ? (
+                                <span className="font-medium text-gray-900">{evaluation.puntuacion}/100</span>
+                              ) : (
+                                <span className="text-gray-400">-</span>
+                              )}
+                            </td>
+                            <td className="py-3 px-4 text-gray-600">{evaluation.fecha}</td>
+                            <td className="py-3 px-4">
+                              <div className="flex items-center space-x-2">
+                                <button className="p-1 text-blue-600 hover:bg-blue-50 rounded">
+                                  <Eye className="h-4 w-4" />
+                                </button>
+                                <button className="p-1 text-gray-600 hover:bg-gray-50 rounded">
+                                  <Edit className="h-4 w-4" />
+                                </button>
+                                <button className="p-1 text-gray-600 hover:bg-gray-50 rounded">
+                                  <MoreVertical className="h-4 w-4" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
                     </tbody>
                   </table>
                 </div>
               </div>
             )}
 
-            {/* Contenido del tab Usuarios */}
+            {/* Tab Usuarios */}
             {activeTab === 'users' && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
@@ -355,35 +379,17 @@ const AdminDashboard = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Aquí puedes mapear categorías o roles de usuarios si los tienes */}
                   <div className="bg-blue-50 rounded-lg p-4">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-blue-600 font-medium">Evaluadores</p>
-                        <p className="text-2xl font-bold text-blue-900">156</p>
+                        <p className="text-2xl font-bold text-blue-900">{topUsers.length}</p>
                       </div>
                       <Users className="h-8 w-8 text-blue-600" />
                     </div>
                   </div>
-                  
-                  <div className="bg-green-50 rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-green-600 font-medium">Administradores</p>
-                        <p className="text-2xl font-bold text-green-900">8</p>
-                      </div>
-                      <Shield className="h-8 w-8 text-green-600" />
-                    </div>
-                  </div>
-                  
-                  <div className="bg-purple-50 rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-purple-600 font-medium">Usuarios Activos</p>
-                        <p className="text-2xl font-bold text-purple-900">142</p>
-                      </div>
-                      <Activity className="h-8 w-8 text-purple-600" />
-                    </div>
-                  </div>
+                  {/* Puedes agregar más cajas según roles o estados */}
                 </div>
 
                 <div className="space-y-4">
@@ -418,7 +424,7 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            {/* Contenido del tab Alertas */}
+            {/* Tab Alertas */}
             {activeTab === 'alerts' && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
@@ -431,7 +437,15 @@ const AdminDashboard = () => {
                 <div className="space-y-4">
                   {systemAlerts.map(alert => (
                     <div key={alert.id} className="flex items-start space-x-3 p-4 bg-white border border-gray-200 rounded-lg">
-                      {getAlertIcon(alert.tipo)}
+                      {(() => {
+                        switch(alert.tipo) {
+                          case 'warning': return <AlertCircle className="h-4 w-4 text-yellow-500" />;
+                          case 'error': return <AlertCircle className="h-4 w-4 text-red-500" />;
+                          case 'info': return <Activity className="h-4 w-4 text-blue-500" />;
+                          case 'success': return <CheckCircle className="h-4 w-4 text-green-500" />;
+                          default: return null;
+                        }
+                      })()}
                       <div className="flex-1">
                         <p className="text-gray-900">{alert.mensaje}</p>
                         <div className="flex items-center mt-2 text-sm text-gray-500">
@@ -451,26 +465,26 @@ const AdminDashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
+        <div className="bg-white rounded-xl shadow-lg p-6 mt-8">
           <h3 className="text-lg font-semibold text-gray-900 mb-6">Acciones Rápidas</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <button className="flex flex-col items-center space-y-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
               <BookOpen className="h-8 w-8 text-blue-600" />
               <span className="text-sm font-medium text-gray-700">Nueva Norma</span>
             </button>
-            
+
             <button className="flex flex-col items-center space-y-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
               <Users className="h-8 w-8 text-green-600" />
               <span className="text-sm font-medium text-gray-700">Gestionar Usuarios</span>
             </button>
-            
+
             <button className="flex flex-col items-center space-y-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
               <BarChart3 className="h-8 w-8 text-purple-600" />
               <span className="text-sm font-medium text-gray-700">Ver Reportes</span>
             </button>
-            
+
             <button className="flex flex-col items-center space-y-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-              <Settings className="h-8 w-8 text-gray-600" />
+              <Shield className="h-8 w-8 text-gray-600" />
               <span className="text-sm font-medium text-gray-700">Configuración</span>
             </button>
           </div>
